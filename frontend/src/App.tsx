@@ -17,8 +17,7 @@ import { MapPage } from "./pages/MapPage";
 import { TasksPage } from "./pages/TasksPage";
 
 function App() {
-    const { user, firebaseUser, loading: authLoading, logout } = useAuth();
-    const token = firebaseUser ? firebaseUser.uid : null;
+    const { user, token, loading: authLoading, logout } = useAuth();
     const {
         tasks,
         loading: tasksLoading,

@@ -1,0 +1,19 @@
+# Development Dockerfile for backend
+FROM node:18-alpine
+
+WORKDIR /app
+
+# Copy package files
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy source (will be overridden by volume mount in docker-compose)
+COPY . .
+
+# Expose port
+EXPOSE 3000
+
+# Run with ts-node for development (no need for pre-built dist)
+CMD ["npm", "run", "dev"]

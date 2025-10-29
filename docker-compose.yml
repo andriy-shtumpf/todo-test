@@ -1,57 +1,57 @@
-version: '3.8'
+version: "3.8"
 
 services:
-  postgres:
-    image: postgres:15-alpine
-    container_name: todo-postgres
-    environment:
-      POSTGRES_USER: todouser
-      POSTGRES_PASSWORD: todopass
-      POSTGRES_DB: tododb
-    ports:
-      - "5432:5432"
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    networks:
-      - todo-network
+    postgres:
+        image: postgres:15-alpine
+        container_name: todo-postgres
+        environment:
+            POSTGRES_USER: todouser
+            POSTGRES_PASSWORD: todopass
+            POSTGRES_DB: tododb
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        networks:
+            - todo-network
 
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: todo-backend
-    environment:
-      DATABASE_URL: postgresql://todouser:todopass@postgres:5432/tododb
-      NODE_ENV: development
-      PORT: 3000
-    ports:
-      - "3000:3000"
-    depends_on:
-      - postgres
-    volumes:
-      - ./backend:/app
-      - /app/node_modules
-    networks:
-      - todo-network
+    backend:
+        build:
+            context: ./backend
+            dockerfile: Dockerfile.dev
+        container_name: todo-backend
+        environment:
+            DATABASE_URL: postgresql://todouser:todopass@postgres:5432/tododb
+            NODE_ENV: development
+            PORT: 3000
+        ports:
+            - "3000:3000"
+        depends_on:
+            - postgres
+        volumes:
+            - ./backend:/app
+            - /app/node_modules
+        networks:
+            - todo-network
 
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.dev
-    container_name: todo-frontend
-    ports:
-      - "5173:5173"
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    networks:
-      - todo-network
-    environment:
-      - VITE_API_URL=http://localhost:3000
+    frontend:
+        build:
+            context: ./frontend
+            dockerfile: Dockerfile.dev
+        container_name: todo-frontend
+        ports:
+            - "5173:5173"
+        volumes:
+            - ./frontend:/app
+            - /app/node_modules
+        networks:
+            - todo-network
+        environment:
+            - VITE_API_URL=http://localhost:3000
 
 volumes:
-  postgres_data:
+    postgres_data:
 
 networks:
-  todo-network:
-    driver: bridge
+    todo-network:
+        driver: bridge

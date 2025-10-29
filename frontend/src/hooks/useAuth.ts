@@ -14,6 +14,7 @@ import { User } from "../types";
 interface UseAuthReturn {
     user: User | null;
     firebaseUser: FirebaseUser | null;
+    token: string | null;
     loading: boolean;
     error: string | null;
     logout: () => Promise<void>;
@@ -22,13 +23,14 @@ interface UseAuthReturn {
 export function useAuth(): UseAuthReturn {
     const [user, setUser] = useState<User | null>(null);
     const [firebaseUser, setFirebaseUser] = useState<FirebaseUser | null>(null);
+    const [token, setToken] = useState<string | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(
             auth,
-            (fbUser) => {
+            async (fbUser) => {
                 if (fbUser) {
                     setFirebaseUser(fbUser);
                     setUser({
@@ -37,9 +39,21 @@ export function useAuth(): UseAuthReturn {
                         name: fbUser.displayName || "User",
                         photoURL: fbUser.photoURL || undefined,
                     });
+                    // Get the ID token for API authentication
+                    try {
+                        const idToken = await fbUser.getIdToken();
+                        setToken(idToken);
+                    } catch (err) {
+                        setError(
+                            err instanceof Error
+                                ? err.message
+                                : "Failed to get token"
+                        );
+                    }
                 } else {
                     setFirebaseUser(null);
                     setUser(null);
+                    setToken(null);
                 }
                 setLoading(false);
             },
@@ -57,10 +71,11 @@ export function useAuth(): UseAuthReturn {
             await signOut(auth);
             setUser(null);
             setFirebaseUser(null);
+            setToken(null);
         } catch (err) {
             setError(err instanceof Error ? err.message : "Logout failed");
         }
     };
 
-    return { user, firebaseUser, loading, error, logout };
+    return { user, firebaseUser, token, loading, error, logout };
 }
