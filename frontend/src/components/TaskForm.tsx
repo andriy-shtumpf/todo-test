@@ -1,40 +1,46 @@
 /**
- * Form for creating new tasks
+ * Task creation form component
+ * - Allows users to create new tasks with title, description, address, and due date
+ * - Includes form validation
+ * - Resets form after successful submission
  */
 
 import { FormEvent, useState } from "react";
 import { Task } from "../types";
 
 interface TaskFormProps {
-    userId: string;
+    userId: string; // Current user ID
     onSubmit: (
         data: Omit<Task, "id" | "createdAt" | "updatedAt">
-    ) => Promise<void>;
-    loading?: boolean;
+    ) => Promise<void>; // Submit handler
+    loading?: boolean; // Global loading state
 }
 
 export function TaskForm({ userId, onSubmit, loading }: TaskFormProps) {
-    const [title, setTitle] = useState("");
+    // Form state
+    const [title, setTitle] = useState(""); // Required
     const [description, setDescription] = useState("");
-    const [address, setAddress] = useState("");
-    const [dueDate, setDueDate] = useState("");
-    const [submitting, setSubmitting] = useState(false);
+    const [address, setAddress] = useState(""); // For geocoding on map
+    const [dueDate, setDueDate] = useState(""); // Optional deadline
+    const [submitting, setSubmitting] = useState(false); // Form submission in progress
 
+    // Handle form submission
     const handleSubmit = async (e: FormEvent) => {
         e.preventDefault();
         setSubmitting(true);
 
         try {
+            // Submit task data with required and optional fields
             await onSubmit({
                 title,
                 description,
-                status: "created",
-                address: address || undefined,
+                status: "created", // All new tasks start as "created"
+                address: address || undefined, // Convert empty string to undefined
                 dueDate: dueDate || undefined,
                 userId,
             });
 
-            // Reset form
+            // Clear form after successful submission
             setTitle("");
             setDescription("");
             setAddress("");

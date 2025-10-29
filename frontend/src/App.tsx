@@ -1,5 +1,9 @@
 /**
- * Main App component with routing
+ * Main App component with routing and authentication
+ * - Sets up React Router with public and protected routes
+ * - Initializes authentication and task management hooks
+ * - Redirects unauthenticated users to login page
+ * - Provides layout wrapper with Header and Footer
  */
 
 import {
@@ -27,6 +31,7 @@ function App() {
         deleteTask,
     } = useTasks(token);
 
+    // Show loading screen while checking authentication state
     if (authLoading) {
         return (
             <div className="flex items-center justify-center h-screen bg-gradient-to-br from-blue-500 to-purple-600">

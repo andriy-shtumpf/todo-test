@@ -1,17 +1,24 @@
 /**
  * Task card component - Draggable card for kanban board
+ * - Displays individual task with title, description, status
+ * - Supports drag-and-drop for status updates
+ * - Shows task address, due date, and action buttons
  */
 
 import { Task, TaskStatus } from "../types";
 
 interface TaskCardProps {
-    task: Task;
-    onStatusChange: (id: string, data: Partial<Task>) => Promise<Task>;
-    onDelete: (id: string) => Promise<void>;
-    onDragStart?: (task: Task) => void;
-    isDragging?: boolean;
+    task: Task; // Task data to display
+    onStatusChange: (id: string, data: Partial<Task>) => Promise<Task>; // Update task status
+    onDelete: (id: string) => Promise<void>; // Delete task
+    onDragStart?: (task: Task) => void; // Drag start handler
+    isDragging?: boolean; // Visual indicator for dragging
 }
 
+/**
+ * Status color configuration for UI styling
+ * Each status has background color, text color, and display label
+ */
 const statusColors: Record<
     TaskStatus,
     { bg: string; text: string; label: string }
@@ -38,11 +45,12 @@ export function TaskCard({
 }: TaskCardProps) {
     const statusColor = statusColors[task.status];
 
+    // Cycle task status: created -> in_progress -> completed -> created
     const handleStatusChange = async () => {
         const nextStatus: Record<TaskStatus, TaskStatus> = {
-            created: "in_progress",
-            in_progress: "completed",
-            completed: "created",
+            created: "in_progress", // Move created to in progress
+            in_progress: "completed", // Move in progress to completed
+            completed: "created", // Reset completed back to created
         };
         try {
             await onStatusChange(task.id, { status: nextStatus[task.status] });

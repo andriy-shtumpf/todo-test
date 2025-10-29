@@ -1,5 +1,9 @@
 /**
  * Custom hook for managing tasks
+ * - Fetches and caches tasks from the API
+ * - Provides CRUD operations (Create, Read, Update, Delete)
+ * - Manages loading and error states
+ * - Automatically fetches tasks when token is available
  */
 
 import { useCallback, useEffect, useState } from "react";
@@ -9,11 +13,11 @@ import { Task, TasksState } from "../types";
 interface UseTasksReturn extends TasksState {
     createTask: (
         data: Omit<Task, "id" | "createdAt" | "updatedAt">
-    ) => Promise<Task>;
-    updateTask: (id: string, data: Partial<Task>) => Promise<Task>;
-    deleteTask: (id: string) => Promise<void>;
-    fetchTasks: () => Promise<void>;
-    fetchUserTasks: (userId: string) => Promise<void>;
+    ) => Promise<Task>; // Create new task
+    updateTask: (id: string, data: Partial<Task>) => Promise<Task>; // Update existing task
+    deleteTask: (id: string) => Promise<void>; // Delete a task
+    fetchTasks: () => Promise<void>; // Manually fetch all tasks
+    fetchUserTasks: (userId: string) => Promise<void>; // Fetch user-specific tasks
 }
 
 export function useTasks(token: string | null): UseTasksReturn {
@@ -23,14 +27,16 @@ export function useTasks(token: string | null): UseTasksReturn {
         error: null,
     });
 
+    // Fetch all tasks from API
     const fetchTasks = useCallback(async () => {
-        if (!token) return;
+        if (!token) return; // Wait for token to be available
 
         setState((prev) => ({ ...prev, loading: true, error: null }));
         try {
             const tasks = await tasksAPI.getAll(token);
             setState((prev) => ({ ...prev, tasks, loading: false }));
         } catch (error) {
+            // Update state with error message
             setState((prev) => ({
                 ...prev,
                 error:

@@ -1,5 +1,9 @@
 /**
  * Custom hook for Firebase authentication
+ * - Monitors Firebase authentication state changes
+ * - Retrieves and manages JWT tokens for API requests
+ * - Provides user data and logout functionality
+ * - Automatically updates when user logs in/out
  */
 
 import {
@@ -12,12 +16,12 @@ import { auth } from "../config/firebase";
 import { User } from "../types";
 
 interface UseAuthReturn {
-    user: User | null;
-    firebaseUser: FirebaseUser | null;
-    token: string | null;
-    loading: boolean;
-    error: string | null;
-    logout: () => Promise<void>;
+    user: User | null; // Authenticated user data
+    firebaseUser: FirebaseUser | null; // Raw Firebase user object
+    token: string | null; // JWT token for API authentication
+    loading: boolean; // Authentication state check in progress
+    error: string | null; // Any authentication errors
+    logout: () => Promise<void>; // Sign out function
 }
 
 export function useAuth(): UseAuthReturn {
@@ -27,11 +31,13 @@ export function useAuth(): UseAuthReturn {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
 
+    // Monitor Firebase auth state on component mount
     useEffect(() => {
         const unsubscribe = onAuthStateChanged(
             auth,
             async (fbUser) => {
                 if (fbUser) {
+                    // User is logged in
                     setFirebaseUser(fbUser);
                     setUser({
                         id: fbUser.uid,
@@ -39,7 +45,7 @@ export function useAuth(): UseAuthReturn {
                         name: fbUser.displayName || "User",
                         photoURL: fbUser.photoURL || undefined,
                     });
-                    // Get the ID token for API authentication
+                    // Fetch JWT token for API calls
                     try {
                         const idToken = await fbUser.getIdToken();
                         setToken(idToken);
@@ -51,6 +57,7 @@ export function useAuth(): UseAuthReturn {
                         );
                     }
                 } else {
+                    // User is logged out - clear all user data
                     setFirebaseUser(null);
                     setUser(null);
                     setToken(null);
@@ -58,11 +65,13 @@ export function useAuth(): UseAuthReturn {
                 setLoading(false);
             },
             (error) => {
+                // Handle auth initialization error
                 setError(error.message);
                 setLoading(false);
             }
         );
 
+        // Cleanup subscription on unmount
         return () => unsubscribe();
     }, []);
 

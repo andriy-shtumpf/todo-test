@@ -1,5 +1,9 @@
 /**
  * Dashboard page - Overview of all tasks with responsive kanban board
+ * - Displays task statistics at the top
+ * - Three-column kanban board layout (Created, In Progress, Completed)
+ * - Supports drag-and-drop between columns
+ * - Mobile responsive with grid layout
  */
 
 import { useState } from "react";
@@ -7,10 +11,10 @@ import { TaskCard } from "../components/TaskCard";
 import { Task, TaskStatus } from "../types";
 
 interface DashboardProps {
-    tasks: Task[];
-    onStatusChange: (id: string, data: Partial<Task>) => Promise<Task>;
-    onDelete: (id: string) => Promise<void>;
-    loading: boolean;
+    tasks: Task[]; // All tasks to display
+    onStatusChange: (id: string, data: Partial<Task>) => Promise<Task>; // Handle status updates
+    onDelete: (id: string) => Promise<void>; // Handle task deletion
+    loading: boolean; // Loading state
 }
 
 export function Dashboard({
@@ -19,15 +23,16 @@ export function Dashboard({
     onDelete,
     loading,
 }: DashboardProps) {
-    const [draggedTask, setDraggedTask] = useState<Task | null>(null);
+    const [draggedTask, setDraggedTask] = useState<Task | null>(null); // Track dragged task
 
-    // Group tasks by status
+    // Group tasks by status for kanban display
     const tasksByStatus = {
         created: tasks.filter((t) => t.status === "created"),
         in_progress: tasks.filter((t) => t.status === "in_progress"),
         completed: tasks.filter((t) => t.status === "completed"),
     };
 
+    // Calculate task statistics for overview cards
     const stats = {
         total: tasks.length,
         created: tasksByStatus.created.length,
@@ -35,22 +40,27 @@ export function Dashboard({
         completed: tasksByStatus.completed.length,
     };
 
+    // Handle drag start - store reference to dragged task
     const handleDragStart = (task: Task) => {
         setDraggedTask(task);
     };
 
+    // Allow drop on column
     const handleDragOver = (e: React.DragEvent) => {
-        e.preventDefault();
+        e.preventDefault(); // Enable drop
     };
 
+    // Handle drop - update task status and clear drag state
     const handleDrop = async (status: TaskStatus) => {
         if (draggedTask && draggedTask.status !== status) {
             try {
+                // Update task with new status
                 await onStatusChange(draggedTask.id, { status });
             } catch (error) {
                 console.error("Error updating task status:", error);
             }
         }
+        // Clear dragged task
         setDraggedTask(null);
     };
 
