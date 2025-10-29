@@ -33,7 +33,12 @@ app.use(
         next: express.NextFunction
     ) => {
         console.error("Unhandled error:", err);
-        res.status(500).json({ error: "Internal server error" });
+        console.error("Error message:", err.message);
+        console.error("Error stack:", err.stack);
+        res.status(500).json({
+            error: "Internal server error",
+            details: err.message,
+        });
     }
 );
 

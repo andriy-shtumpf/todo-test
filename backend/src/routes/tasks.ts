@@ -8,6 +8,22 @@ import { AuthRequest, authenticateToken } from "../middleware/auth.js";
 
 const router = Router();
 
+// Helper to convert database snake_case to camelCase
+function convertToCamelCase(obj: any): any {
+    if (!obj) return obj;
+    return {
+        id: obj.id,
+        title: obj.title,
+        description: obj.description,
+        status: obj.status,
+        userId: obj.user_id,
+        address: obj.address,
+        dueDate: obj.due_date,
+        createdAt: obj.created_at,
+        updatedAt: obj.updated_at,
+    };
+}
+
 // Apply auth middleware to all task routes
 router.use(authenticateToken);
 
@@ -17,7 +33,7 @@ router.get("/", async (req: AuthRequest, res) => {
         const result = await query(
             `SELECT * FROM tasks ORDER BY created_at DESC`
         );
-        res.json(result.rows);
+        res.json(result.rows.map(convertToCamelCase));
     } catch (error) {
         console.error("Error fetching tasks:", error);
         res.status(500).json({ error: "Failed to fetch tasks" });
@@ -33,7 +49,7 @@ router.get("/user/:userId", async (req: AuthRequest, res) => {
             `SELECT * FROM tasks WHERE user_id = $1 ORDER BY created_at DESC`,
             [userId]
         );
-        res.json(result.rows);
+        res.json(result.rows.map(convertToCamelCase));
     } catch (error) {
         console.error("Error fetching user tasks:", error);
         res.status(500).json({ error: "Failed to fetch user tasks" });
@@ -52,7 +68,7 @@ router.get("/:id", async (req: AuthRequest, res) => {
             return;
         }
 
-        res.json(result.rows[0]);
+        res.json(convertToCamelCase(result.rows[0]));
     } catch (error) {
         console.error("Error fetching task:", error);
         res.status(500).json({ error: "Failed to fetch task" });
@@ -90,7 +106,7 @@ router.post("/", async (req: AuthRequest, res) => {
             ]
         );
 
-        res.status(201).json(result.rows[0]);
+        res.status(201).json(convertToCamelCase(result.rows[0]));
     } catch (error) {
         console.error("Error creating task:", error);
         res.status(500).json({ error: "Failed to create task" });
@@ -114,7 +130,7 @@ router.put("/:id", async (req: AuthRequest, res) => {
         }
         if (description !== undefined) {
             updates.push(`description = $${paramCount}`);
-            values.push(description);
+            values.push(description || null);
             paramCount++;
         }
         if (status !== undefined) {
@@ -129,7 +145,11 @@ router.put("/:id", async (req: AuthRequest, res) => {
         }
         if (dueDate !== undefined) {
             updates.push(`due_date = $${paramCount}`);
-            values.push(dueDate);
+            if (dueDate && !isNaN(new Date(dueDate).getTime())) {
+                values.push(new Date(dueDate).toISOString());
+            } else {
+                values.push(null);
+            }
             paramCount++;
         }
 
@@ -154,10 +174,14 @@ router.put("/:id", async (req: AuthRequest, res) => {
             return;
         }
 
-        res.json(result.rows[0]);
+        res.json(convertToCamelCase(result.rows[0]));
     } catch (error) {
         console.error("Error updating task:", error);
-        res.status(500).json({ error: "Failed to update task" });
+        console.error("Request body:", req.body);
+        res.status(500).json({
+            error: "Failed to update task",
+            details: error instanceof Error ? error.message : "Unknown error",
+        });
     }
 });
 
@@ -176,7 +200,7 @@ router.delete("/:id", async (req: AuthRequest, res) => {
             return;
         }
 
-        res.status(204).send();
+        res.status(204).json({ success: true });
     } catch (error) {
         console.error("Error deleting task:", error);
         res.status(500).json({ error: "Failed to delete task" });

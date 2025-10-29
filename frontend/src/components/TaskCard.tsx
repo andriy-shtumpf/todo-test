@@ -6,8 +6,8 @@ import { Task, TaskStatus } from "../types";
 
 interface TaskCardProps {
     task: Task;
-    onStatusChange: (id: string, status: TaskStatus) => void;
-    onDelete: (id: string) => void;
+    onStatusChange: (id: string, data: Partial<Task>) => Promise<Task>;
+    onDelete: (id: string) => Promise<void>;
 }
 
 const statusColors: Record<
@@ -30,13 +30,17 @@ const statusColors: Record<
 export function TaskCard({ task, onStatusChange, onDelete }: TaskCardProps) {
     const statusColor = statusColors[task.status];
 
-    const handleStatusChange = () => {
+    const handleStatusChange = async () => {
         const nextStatus: Record<TaskStatus, TaskStatus> = {
             created: "in_progress",
             in_progress: "completed",
             completed: "created",
         };
-        onStatusChange(task.id, nextStatus[task.status]);
+        try {
+            await onStatusChange(task.id, { status: nextStatus[task.status] });
+        } catch (error) {
+            console.error("Error updating task status:", error);
+        }
     };
 
     return (
@@ -63,11 +67,9 @@ export function TaskCard({ task, onStatusChange, onDelete }: TaskCardProps) {
                     {statusColor.label}
                 </button>
 
-                {task.location && (
+                {task.address && (
                     <span className="text-xs text-gray-500">
-                        📍{" "}
-                        {task.location.address ||
-                            `${task.location.latitude}, ${task.location.longitude}`}
+                        📍 {task.address}
                     </span>
                 )}
             </div>

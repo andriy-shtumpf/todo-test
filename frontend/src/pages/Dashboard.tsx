@@ -3,11 +3,11 @@
  */
 
 import { TaskCard } from "../components/TaskCard";
-import { Task, TaskStatus } from "../types";
+import { Task } from "../types";
 
 interface DashboardProps {
     tasks: Task[];
-    onStatusChange: (id: string, status: TaskStatus) => Promise<void>;
+    onStatusChange: (id: string, data: Partial<Task>) => Promise<Task>;
     onDelete: (id: string) => Promise<void>;
     loading: boolean;
 }

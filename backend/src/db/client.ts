@@ -23,10 +23,13 @@ export async function query(text: string, params?: any[]): Promise<any> {
     try {
         const result = await pool.query(text, params);
         const duration = Date.now() - start;
-        console.log(`Query executed in ${duration}ms:`, text);
+        console.log(`Query executed in ${duration}ms:`, text.substring(0, 100));
+        if (params) console.log("Query params:", params);
         return result;
     } catch (error) {
         console.error("Database query error:", error);
+        console.error("Failed query:", text);
+        console.error("Failed query params:", params);
         throw error;
     }
 }

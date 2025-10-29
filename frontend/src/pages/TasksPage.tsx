@@ -4,7 +4,7 @@
 
 import { TaskCard } from "../components/TaskCard";
 import { TaskForm } from "../components/TaskForm";
-import { Task, TaskStatus } from "../types";
+import { Task } from "../types";
 
 interface TasksPageProps {
     tasks: Task[];
@@ -12,7 +12,7 @@ interface TasksPageProps {
     onCreateTask: (
         data: Omit<Task, "id" | "createdAt" | "updatedAt">
     ) => Promise<void>;
-    onStatusChange: (id: string, status: TaskStatus) => Promise<void>;
+    onStatusChange: (id: string, data: Partial<Task>) => Promise<Task>;
     onDelete: (id: string) => Promise<void>;
     loading: boolean;
 }
