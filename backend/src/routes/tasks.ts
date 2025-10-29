@@ -62,7 +62,7 @@ router.get("/:id", async (req: AuthRequest, res) => {
 // POST /api/tasks - Create task
 router.post("/", async (req: AuthRequest, res) => {
     try {
-        const { title, description, status, userId, location, dueDate } =
+        const { title, description, status, userId, address, dueDate } =
             req.body;
 
         if (!title || !userId) {
@@ -71,17 +71,15 @@ router.post("/", async (req: AuthRequest, res) => {
         }
 
         const result = await query(
-            `INSERT INTO tasks (title, description, status, user_id, latitude, longitude, address, due_date)
-       VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
+            `INSERT INTO tasks (title, description, status, user_id, address, due_date)
+       VALUES ($1, $2, $3, $4, $5, $6)
        RETURNING *`,
             [
                 title,
                 description || null,
                 status || "created",
                 userId,
-                location?.latitude || null,
-                location?.longitude || null,
-                location?.address || null,
+                address || null,
                 dueDate || null,
             ]
         );
@@ -97,7 +95,7 @@ router.post("/", async (req: AuthRequest, res) => {
 router.put("/:id", async (req: AuthRequest, res) => {
     try {
         const { id } = req.params;
-        const { title, description, status, location, dueDate } = req.body;
+        const { title, description, status, address, dueDate } = req.body;
 
         const updates: string[] = [];
         const values: any[] = [];
@@ -118,18 +116,10 @@ router.put("/:id", async (req: AuthRequest, res) => {
             values.push(status);
             paramCount++;
         }
-        if (location !== undefined) {
-            updates.push(
-                `latitude = $${paramCount}, longitude = $${
-                    paramCount + 1
-                }, address = $${paramCount + 2}`
-            );
-            values.push(
-                location.latitude,
-                location.longitude,
-                location.address || null
-            );
-            paramCount += 3;
+        if (address !== undefined) {
+            updates.push(`address = $${paramCount}`);
+            values.push(address || null);
+            paramCount++;
         }
         if (dueDate !== undefined) {
             updates.push(`due_date = $${paramCount}`);

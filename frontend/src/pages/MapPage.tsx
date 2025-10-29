@@ -12,13 +12,14 @@ interface MapPageProps {
 }
 
 export function MapPage({ tasks, loading }: MapPageProps) {
+    const tasksWithAddress = tasks.filter((t) => t.address);
+
     return (
         <div className="space-y-4">
             <div className="bg-white border border-gray-200 rounded-lg p-4">
                 <h2 className="text-lg font-semibold mb-2">Tasks Map</h2>
                 <p className="text-gray-600 text-sm">
-                    Showing {tasks.filter((t) => t.location).length} tasks with
-                    locations
+                    Showing {tasksWithAddress.length} tasks with addresses
                 </p>
             </div>
 

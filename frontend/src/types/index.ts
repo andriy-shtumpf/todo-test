@@ -9,10 +9,9 @@ export interface User {
     photoURL?: string;
 }
 
-export interface Location {
+export interface Coordinates {
     latitude: number;
     longitude: number;
-    address?: string;
 }
 
 export type TaskStatus = "created" | "in_progress" | "completed";
@@ -23,7 +22,7 @@ export interface Task {
     description: string;
     status: TaskStatus;
     userId: string;
-    location?: Location;
+    address?: string;
     createdAt: string;
     updatedAt: string;
     dueDate?: string;

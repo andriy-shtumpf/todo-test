@@ -8,8 +8,6 @@ export interface Task {
     description: string | null;
     status: "created" | "in_progress" | "completed";
     user_id: string;
-    latitude: number | null;
-    longitude: number | null;
     address: string | null;
     due_date: string | null;
     created_at: string;
@@ -23,10 +21,4 @@ export interface User {
     photo_url: string | null;
     created_at: string;
     updated_at: string;
-}
-
-export interface TaskLocation {
-    latitude: number;
-    longitude: number;
-    address?: string;
 }

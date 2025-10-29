@@ -16,8 +16,6 @@ interface TaskFormProps {
 export function TaskForm({ userId, onSubmit, loading }: TaskFormProps) {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
-    const [latitude, setLatitude] = useState("");
-    const [longitude, setLongitude] = useState("");
     const [address, setAddress] = useState("");
     const [dueDate, setDueDate] = useState("");
     const [submitting, setSubmitting] = useState(false);
@@ -27,29 +25,18 @@ export function TaskForm({ userId, onSubmit, loading }: TaskFormProps) {
         setSubmitting(true);
 
         try {
-            const location =
-                latitude && longitude
-                    ? {
-                          latitude: parseFloat(latitude),
-                          longitude: parseFloat(longitude),
-                          address: address || undefined,
-                      }
-                    : undefined;
-
             await onSubmit({
                 title,
                 description,
                 status: "created",
                 userId,
-                location,
+                address: address || undefined,
                 dueDate: dueDate || undefined,
             });
 
             // Reset form
             setTitle("");
             setDescription("");
-            setLatitude("");
-            setLongitude("");
             setAddress("");
             setDueDate("");
         } catch (error) {
@@ -96,36 +83,6 @@ export function TaskForm({ userId, onSubmit, loading }: TaskFormProps) {
                     />
                 </div>
 
-                {/* Location */}
-                <div className="grid grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Latitude
-                        </label>
-                        <input
-                            type="number"
-                            step="0.000001"
-                            value={latitude}
-                            onChange={(e) => setLatitude(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="e.g., 40.7128"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
-                            Longitude
-                        </label>
-                        <input
-                            type="number"
-                            step="0.000001"
-                            value={longitude}
-                            onChange={(e) => setLongitude(e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                            placeholder="e.g., -74.0060"
-                        />
-                    </div>
-                </div>
-
                 {/* Address */}
                 <div>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -136,7 +93,7 @@ export function TaskForm({ userId, onSubmit, loading }: TaskFormProps) {
                         value={address}
                         onChange={(e) => setAddress(e.target.value)}
                         className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        placeholder="Location address"
+                        placeholder="e.g., 123 Main St, New York, NY"
                     />
                 </div>
 
