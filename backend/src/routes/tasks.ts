@@ -62,13 +62,19 @@ router.get("/:id", async (req: AuthRequest, res) => {
 // POST /api/tasks - Create task
 router.post("/", async (req: AuthRequest, res) => {
     try {
-        const { title, description, status, userId, address, dueDate } =
-            req.body;
+        const { title, description, status, address, dueDate } = req.body;
+        const userId = req.user?.uid;
 
         if (!title || !userId) {
-            res.status(400).json({ error: "Title and userId are required" });
+            res.status(400).json({ error: "Title is required" });
             return;
         }
+
+        // Auto-create user if doesn't exist
+        await query(
+            `INSERT INTO users (id, email) VALUES ($1, $2) ON CONFLICT (id) DO NOTHING`,
+            [userId, req.user?.email || ""]
+        );
 
         const result = await query(
             `INSERT INTO tasks (title, description, status, user_id, address, due_date)

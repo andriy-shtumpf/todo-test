@@ -29,7 +29,6 @@ export function TaskForm({ userId, onSubmit, loading }: TaskFormProps) {
                 title,
                 description,
                 status: "created",
-                userId,
                 address: address || undefined,
                 dueDate: dueDate || undefined,
             });
