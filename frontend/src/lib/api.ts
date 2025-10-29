@@ -12,10 +12,20 @@ export async function apiCall(
     options: RequestInit = {},
     token?: string
 ): Promise<Response> {
-    const headers: HeadersInit = {
+    const headers: Record<string, string> = {
         "Content-Type": "application/json",
-        ...options.headers,
     };
+
+    if (options.headers instanceof Headers) {
+        options.headers.forEach((value, key) => {
+            headers[key] = value;
+        });
+    } else if (
+        typeof options.headers === "object" &&
+        options.headers !== null
+    ) {
+        Object.assign(headers, options.headers);
+    }
 
     if (token) {
         headers["Authorization"] = `Bearer ${token}`;

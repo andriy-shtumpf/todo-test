@@ -1,5 +1,5 @@
 /**
- * Task card component
+ * Task card component - Draggable card for kanban board
  */
 
 import { Task, TaskStatus } from "../types";
@@ -8,6 +8,8 @@ interface TaskCardProps {
     task: Task;
     onStatusChange: (id: string, data: Partial<Task>) => Promise<Task>;
     onDelete: (id: string) => Promise<void>;
+    onDragStart?: (task: Task) => void;
+    isDragging?: boolean;
 }
 
 const statusColors: Record<
@@ -27,7 +29,13 @@ const statusColors: Record<
     },
 };
 
-export function TaskCard({ task, onStatusChange, onDelete }: TaskCardProps) {
+export function TaskCard({
+    task,
+    onStatusChange,
+    onDelete,
+    onDragStart,
+    isDragging,
+}: TaskCardProps) {
     const statusColor = statusColors[task.status];
 
     const handleStatusChange = async () => {
@@ -44,38 +52,46 @@ export function TaskCard({ task, onStatusChange, onDelete }: TaskCardProps) {
     };
 
     return (
-        <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition">
-            <div className="flex justify-between items-start mb-2">
-                <h3 className="font-semibold text-gray-900 flex-1">
+        <div
+            draggable={true}
+            onDragStart={() => onDragStart?.(task)}
+            className={`bg-white border border-gray-200 rounded-lg p-3 md:p-4 shadow-sm hover:shadow-md transition cursor-grab active:cursor-grabbing ${
+                isDragging ? "opacity-50" : ""
+            }`}
+        >
+            <div className="flex justify-between items-start mb-2 gap-2">
+                <h3 className="font-semibold text-gray-900 flex-1 text-sm md:text-base line-clamp-2">
                     {task.title}
                 </h3>
                 <button
                     onClick={() => onDelete(task.id)}
-                    className="text-red-500 hover:text-red-700 text-sm font-medium"
+                    className="text-red-500 hover:text-red-700 text-xs md:text-sm font-medium flex-shrink-0 whitespace-nowrap"
                 >
                     Delete
                 </button>
             </div>
 
-            <p className="text-gray-600 text-sm mb-3">{task.description}</p>
+            <p className="text-gray-600 text-xs md:text-sm mb-3 line-clamp-2">
+                {task.description}
+            </p>
 
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-2 mb-2">
                 <button
                     onClick={handleStatusChange}
-                    className={`px-3 py-1 rounded-full text-sm font-medium ${statusColor.bg} ${statusColor.text} hover:opacity-80 transition`}
+                    className={`px-2 md:px-3 py-1 rounded-full text-xs md:text-sm font-medium ${statusColor.bg} ${statusColor.text} hover:opacity-80 transition whitespace-nowrap`}
                 >
                     {statusColor.label}
                 </button>
 
                 {task.address && (
-                    <span className="text-xs text-gray-500">
+                    <span className="text-xs text-gray-500 line-clamp-1">
                         📍 {task.address}
                     </span>
                 )}
             </div>
 
             {task.dueDate && (
-                <p className="text-xs text-gray-400 mt-2">
+                <p className="text-xs text-gray-400">
                     Due: {new Date(task.dueDate).toLocaleDateString()}
                 </p>
             )}
